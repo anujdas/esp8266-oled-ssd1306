@@ -57,7 +57,7 @@ Credits for parts of this code go to Mike Rankin. Thank you so much for sharing!
 #define INVERTDISPLAY 0xA7
 #define MEMORYMODE 0x20
 #define NORMALDISPLAY 0xA6
-#define PAGEADDR 0x22
+#define PAGEADDR 0xB0
 #define SEGREMAP 0xA0
 #define SETCOMPINS 0xDA
 #define SETCONTRAST 0x81

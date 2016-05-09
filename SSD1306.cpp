@@ -103,40 +103,34 @@ void SSD1306::flipScreenVertically() {
 }
 
 void SSD1306::clear(void) {
-    memset(buffer, 0, (128 * 64 / 8));
+  memset(buffer, 0, (128 * 64 / 8));
 }
 
 void SSD1306::display(void) {
-    sendCommand(COLUMNADDR);
-    sendCommand(0x0);
-    sendCommand(0x7F);
-
-    sendCommand(PAGEADDR);
-    sendCommand(0x0);
-    sendCommand(0x7);
-
-	
   if (I2C_io) {
-    for (uint16_t i=0; i<(128*64/8); i++) {
-      // send a bunch of data in one xmission
-      Wire.beginTransmission(myI2cAddress);
-      Wire.write(0x40);
-      for (uint8_t x=0; x<16; x++) {
-        Wire.write(buffer[i]);
-        i++;
+    int buf_pos = 0;
+    for (byte i = 0; i < 8; i++) {
+      sendCommand(PAGEADDR + i);  // set page address
+      sendCommand(SETHIGHCOLUMN);  // set higher column address
+      sendCommand(SETLOWCOLUMN + 2);  // offset by 2 for SH1106
+      for(byte j = 0; j < 8; j++) {
+        Wire.beginTransmission(myI2cAddress);
+        Wire.write(SETSTARTLINE);
+        for (byte k = 0; k < 16; k++)
+          Wire.write(buffer[buf_pos++]);
+        Wire.endTransmission();
+        yield();
       }
-      i--;
-      yield();
-      Wire.endTransmission();
     }
-  }	else {
-	digitalWrite(myCS, HIGH);
+
+  } else {
+    digitalWrite(myCS, HIGH);
     digitalWrite(myDC, HIGH);   // data mode
     digitalWrite(myCS, LOW);
-	for (uint16_t i=0; i<(128*64/8); i++) {
-	 SPI.transfer(buffer[i]);
-	}
-	digitalWrite(myCS, HIGH);	
+    for (uint16_t i=0; i<(128*64/8); i++) {
+      SPI.transfer(buffer[i]);
+    }
+    digitalWrite(myCS, HIGH);
   }
 }
 
@@ -399,3 +393,4 @@ void SSD1306::sendInitCommands(void) {
   sendCommand(0x2e);            // stop scroll
   sendCommand(DISPLAYON);
 }
+
